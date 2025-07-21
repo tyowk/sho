@@ -1,0 +1,60 @@
+{
+    "$schema": "https://json.schemastore.org/package.json",
+    "name": "sho",
+    "version": "0.0.1",
+    "description": "A simple moderation discord bot.",
+    "type": "commonjs",
+    "main": "./dist/index.js",
+    "bin": {
+        "sho": "src/bin/index.js"
+    },
+    "keywords": [
+        "discord.js",
+        "aoi.js",
+        "dbd.js",
+        "bdfd",
+        "discord",
+        "bot",
+        "moderation",
+        "simple",
+        "easy",
+        "js",
+        "typescript",
+        "nodejs"
+    ],
+    "author": "Tyowk <tyowk@outlook.com>",
+    "license": "Apache-2.0",
+    "dependencies": {
+        "aoi.js": "^6.10.4-dev.c0cc02d.1752735656",
+        "aoijs.mysql": "^4.10.0"
+    },
+    "devDependencies": {
+        "@biomejs/biome": "^2.1.2",
+        "@typescript/native-preview": "^7.0.0-dev.20250721.1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/tyowk/sho.git"
+    },
+    "bugs": {
+        "url": "https://github.com/tyowk/sho/issues"
+    },
+    "files": [
+        "dist",
+        "README.md",
+        "LICENSE",
+        "package.json",
+        "CHANGELOG.md"
+    ],
+    "engines": {
+        "node": ">=20.x",
+        "npm": ">=9.x"
+    },
+    "scripts": {
+        "build": "npm run pretty && npm run build:ts",
+        "build:ts": "npx tsgo -p tsconfig.json",
+        "lint": "biome lint --fix --config-path biome.json",
+        "format": "biome format --write --config-path biome.json",
+        "pretty": "npm run format && npm run lint"
+    }
+}
