@@ -48,10 +48,6 @@
         "npm": ">=9.x"
     },
     "scripts": {
-        "build": "npm run pretty && npm run build:ts",
-        "build:ts": "npx tsgo -p tsconfig.json",
-        "lint": "biome lint --fix --config-path biome.json",
-        "format": "biome format --write --config-path biome.json",
-        "pretty": "npm run format && npm run lint"
+        "start": "chmod +x ./start.sh && ./start.sh"
     }
 }
