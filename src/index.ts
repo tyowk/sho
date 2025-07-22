@@ -10,6 +10,7 @@ export default createClient({
     events: ['onMessage', 'onInteractionCreate'],
     database: {
         url: process.env.MYSQL ?? '',
+        path: './database.sqlite',
         tables: ['main'],
         keepAoiDB: false
     },

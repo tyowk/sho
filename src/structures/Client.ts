@@ -1,5 +1,7 @@
 import { AoiClient, type ClientOptions, type CacheOptions } from 'aoi.js';
 import { Database, Functions } from 'aoijs.mysql';
+import Keyv from 'keyv';
+import KeyvSqlite from '@keyv/sqlite';
 import FS from 'node:fs';
 import PATH from 'node:path';
 import { red, blue, yellow, green } from 'chalk';
@@ -18,6 +20,7 @@ interface Variables {
 
 interface DatabaseOP {
     url: string;
+    path: string;
     tables?: string[];
     keepAoiDB?: boolean;
     debug?: boolean;
@@ -42,6 +45,7 @@ interface Client extends Omit<ClientOptions, 'cache' | 'commands' | 'status' | '
 declare module 'aoi.js' {
     interface AoiClient {
         logger(message: string, type?: 'error' | 'warn' | 'info' | 'success'): void;
+        kv: Keyv;
     }
 }
 
@@ -64,19 +68,10 @@ export function createClient(options: Client): AoiClient {
         }
     }
 
-    if (Array.isArray(statuses)) {
-        for (const { type, name, url, time, status } of statuses) {
-            client.status({
-                type,
-                name,
-                url: url ?? '',
-                time,
-                status,
-                shardID: 0
-            });
-        }
-    } else if (typeof statuses === 'object') {
-        const { type, name, url, time, status } = statuses;
+    const statusess = (!Array.isArray(statuses) ? [statuses] : statuses).filter(Boolean);
+    for (const op of statusess) {
+        const { type, name, url, time, status } = op ?? {};
+        if (!type || !name || !time || !status) continue;
         client.status({
             type,
             name,
@@ -87,11 +82,11 @@ export function createClient(options: Client): AoiClient {
         });
     }
 
-    if (typeof options.functions === 'string' && FS.existsSync(PATH.join(__dirname, '..', options.functions))) {
+    if (typeof options.functions === 'string' && isDirectoryExists(options.functions)) {
         new Functions(client, PATH.join(__dirname, '..', options.functions), debug ?? false);
     }
 
-    if (typeof commands === 'string' && FS.existsSync(PATH.join(__dirname, '..', commands))) {
+    if (typeof commands === 'string' && isDirectoryExists(commands)) {
         client.loadCommands(PATH.join(__dirname, '..', commands), debug ?? false);
     }
 
@@ -100,12 +95,15 @@ export function createClient(options: Client): AoiClient {
 }
 
 function initializeDatabase(client: AoiClient, options: DatabaseOP, debug = false): Database {
-    return new Database(client, {
+    new Database(client, {
         url: options.url,
         tables: options.tables ?? ['main'],
         keepAoiDB: options.keepAoiDB ?? false,
         debug: debug ?? false
     });
+
+    const keyvSqlite = new KeyvSqlite(`sqlite://${PATH.join(__dirname, '../..', options.path)}`);
+    client.kv = new Keyv({ store: keyvSqlite, ttl: 5000, namespace: 'sho' });
 }
 
 function debugLog(message: string, type: 'error' | 'warn' | 'info' | 'success' = 'info'): void {
@@ -125,4 +123,9 @@ function debugLog(message: string, type: 'error' | 'warn' | 'info' | 'success' =
         default:
             console.log(`[${blue('INFO')}] :: ${message}`);
     }
+}
+
+function isDirectoryExists(_path: string): boolean {
+    const path = PATH.join(__dirname, '..', _path);
+    return FS.existsSync(path) && FS.lstatSync(path).isDirectory();
 }

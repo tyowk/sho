@@ -22,8 +22,10 @@
     "author": "Tyowk <tyowk@outlook.com>",
     "license": "Apache-2.0",
     "dependencies": {
+        "@keyv/sqlite": "^4.0.5",
         "aoi.js": "^6.10.4-dev.c0cc02d.1752735656",
-        "aoijs.mysql": "^4.10.0"
+        "aoijs.mysql": "^4.10.0",
+        "keyv": "^5.4.0"
     },
     "devDependencies": {
         "@biomejs/biome": "^2.1.2",
