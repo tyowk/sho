@@ -7,30 +7,20 @@
     "main": "./dist/index.js",
     "keywords": [
         "discord.js",
-        "aoi.js",
-        "dbd.js",
-        "bdfd",
         "discord",
         "bot",
         "moderation",
-        "simple",
-        "easy",
-        "js",
         "typescript",
-        "nodejs"
+        "node.js",
+        "node",
+        "js",
+        "ts",
+        "javascript",
+        "typescript",
+        "discord-bot"
     ],
     "author": "Tyowk <tyowk@outlook.com>",
     "license": "Apache-2.0",
-    "dependencies": {
-        "@keyv/sqlite": "^4.0.5",
-        "aoi.js": "^6.10.4-dev.c0cc02d.1752735656",
-        "aoijs.mysql": "^4.10.0",
-        "keyv": "^5.4.0"
-    },
-    "devDependencies": {
-        "@biomejs/biome": "^2.1.2",
-        "@typescript/native-preview": "^7.0.0-dev.20250721.1"
-    },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/tyowk/sho.git"
@@ -51,5 +41,15 @@
     },
     "scripts": {
         "start": "chmod +x ./start.sh && ./start.sh"
+    },
+    "devDependencies": {
+        "@biomejs/biome": "^2.1.2",
+        "@typescript/native-preview": "^7.0.0-dev.20250724.1"
+    },
+    "dependencies": {
+        "@keyv/sqlite": "^4.0.5",
+        "chalk": "^4.1.2",
+        "discord.js": "^14.21.0",
+        "keyv": "^5.4.0"
     }
 }

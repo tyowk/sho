@@ -1,4 +1,7 @@
-module.exports = {
+export default {
     name: 'ping',
-    code: 'Pong! $pingms'
+    description: 'Ping! Pong! Ping! Pong!',
+    execute: async () => {
+        // SOON!
+    }
 };

@@ -15,7 +15,12 @@ line() {
 clear
 log "Installing dependencies..."
 sleep 1
-npm install aoi.js@dev @biomejs/biome@latest @typescript/native-preview@latest aoijs.mysql@latest
+npm install
+sleep 1
+clear
+log "Installed dependencies:"
+echo " "
+npm ls
 sleep 2
 clear
 

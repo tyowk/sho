@@ -1,28 +1,13 @@
-import { createClient } from './structures';
+import { Sho } from './structures';
 
-export default createClient({
+export default Sho.createClient({
     token: process.env.TOKEN ?? '',
-    prefix: ['+', 'sho'],
-    commands: './commands',
-    debug: true,
-    functions: './functions',
-    intents: ['Guilds', 'GuildMessages', 'MessageContent', 'GuildMembers', 'GuildBans'],
-    events: ['onMessage', 'onInteractionCreate'],
+    commands: 'dist/commands',
+    events: 'dist/events',
     database: {
-        url: process.env.MYSQL ?? '',
-        path: './database.sqlite',
-        tables: ['main'],
-        keepAoiDB: false
+        path: 'database',
+        tables: ['prefix', 'users', 'cooldowns']
     },
-    status: {
-        type: 'Custom',
-        name: "/help   |   I'm Sho!",
-        time: 12,
-        status: 'idle'
-    },
-    variables: {
-        main: {
-            test: 'value'
-        }
-    }
+    intents: ['Guilds', 'GuildMessages', 'MessageContent'],
+    partials: ['Channel']
 });
