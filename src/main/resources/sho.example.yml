@@ -1,3 +1,4 @@
-token: "YOUR_BOT_TOKEN_HERE"
-prefix: "BOT_PREFIX_HERE"
-database: "DATABASE_PATH_HERE"
+token: "YOUR_BOT_TOKEN_HERE" # Your discord bot token. You can get this from the discord developer portal.
+prefix: "BOT_PREFIX_HERE" # The prefix for the bot. This is what you will type before a command.
+database: "DATABASE_PATH_HERE" # Path to the database file. This is where the bot will store its data.
+tables: ["guilds", "economy", "cooldowns"] # Tables to create in the database.

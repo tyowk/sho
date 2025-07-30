@@ -9,34 +9,54 @@ import java.sql.Statement;
 
 public class Database implements AutoCloseable {
     private final Connection conn;
+    private final String[] tables;
+    private final String path;
 
-    public Database(String dbPath) {
+    public Database(String dbPath, String[] tables) {
+        if (dbPath == null || dbPath.isBlank()) {
+            throw new IllegalArgumentException("Database path is missing or empty!");
+        }
+
+        if (tables == null || tables.length == 0) {
+            throw new IllegalArgumentException("Database tables array is missing or empty!");
+        }
+
+        this.path = dbPath;
+        this.tables = tables;
+
         try {
             conn = DriverManager.getConnection("jdbc:sqlite:" + dbPath);
             try (Statement stmt = conn.createStatement()) {
-                stmt.execute("CREATE TABLE IF NOT EXISTS main (key TEXT PRIMARY KEY, value TEXT)");
+                for (String table : tables) {
+                    stmt.execute(
+                            "CREATE TABLE IF NOT EXISTS "
+                                    + table
+                                    + " (key TEXT PRIMARY KEY, value LONGTEXT)");
+                }
             }
         } catch (SQLException e) {
             throw new RuntimeException("Failed to initialize database", e);
         }
     }
 
-    public void put(String key, String id, String value) {
+    public void put(String table, String key, String id, String value) {
         String sql =
-                "INSERT INTO main (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value ="
-                        + " excluded.value";
+                "INSERT INTO "
+                        + table
+                        + " (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             key = key + (id == null ? "" : ":" + id);
             ps.setString(1, key);
             ps.setString(2, value);
+            ps.setString(3, value);
             ps.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException("Failed to put key: " + key, e);
         }
     }
 
-    public String get(String key, String id) {
-        String sql = "SELECT value FROM main WHERE key = ?";
+    public String get(String table, String key, String id) {
+        String sql = "SELECT value FROM " + table + " WHERE key = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             key = key + (id == null ? "" : ":" + id);
             ps.setString(1, key);
@@ -48,8 +68,8 @@ public class Database implements AutoCloseable {
         }
     }
 
-    public void delete(String key, String id) {
-        String sql = "DELETE FROM main WHERE key = ?";
+    public void delete(String table, String key, String id) {
+        String sql = "DELETE FROM " + table + " WHERE key = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             key = key + (id == null ? "" : ":" + id);
             ps.setString(1, key);
@@ -59,8 +79,8 @@ public class Database implements AutoCloseable {
         }
     }
 
-    public boolean exists(String key, String id) {
-        String sql = "SELECT 1 FROM main WHERE key = ?";
+    public boolean exists(String table, String key, String id) {
+        String sql = "SELECT 1 FROM " + table + " WHERE key = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             key = key + (id == null ? "" : ":" + id);
             ps.setString(1, key);
@@ -72,11 +92,19 @@ public class Database implements AutoCloseable {
         }
     }
 
-    public void clear() {
+    public void clear(String table) {
         try (Statement stmt = conn.createStatement()) {
-            stmt.executeUpdate("DELETE FROM main");
+            stmt.executeUpdate("DELETE FROM " + table);
         } catch (SQLException e) {
             throw new RuntimeException("Failed to clear database", e);
+        }
+    }
+
+    public void drop(String table) {
+        try (Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate("DROP TABLE IF EXISTS " + table);
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to drop table", e);
         }
     }
 

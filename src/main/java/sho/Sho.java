@@ -2,6 +2,7 @@ package sho;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 
@@ -13,7 +14,6 @@ import sho.structs.Config;
 import sho.structs.Database;
 import sho.structs.Time;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -25,8 +25,8 @@ public class Sho {
     public final Database db;
     public final Time time = new Time();
 
-    public Sho(Config config) throws Exception {
-        this.config = config;
+    public Sho() throws Exception {
+        this.config = Config.load();
         if (config.token == null || config.token.isBlank()) {
             throw new IllegalArgumentException(
                     "Client token is missing or empty. Please provide a valid token!");
@@ -42,15 +42,26 @@ public class Sho {
                         .addEventListeners(
                                 new sho.events.MessageListener(this),
                                 new sho.events.ReadyListener())
-                        .setActivity(Activity.playing("Learning Java"))
+                        .setActivity(Activity.customStatus("Booting up..."))
+                        .setStatus(OnlineStatus.IDLE)
                         .build();
 
         jda.awaitReady();
         loadCommandRegistry();
-        logger.info("JDA connection established.");
+        logger.info("JDA connection established");
 
-        this.db = new Database(config.database);
-        logger.info("Database connection established.");
+        this.db = new Database(config.getDatabasePath(), config.getTables());
+        logger.info("Database connection established");
+
+        sleep(3000);
+        logger.info(" ");
+        logger.info(
+                "RAM usage: {} MB",
+                (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())
+                        / 1024
+                        / 1024);
+        logger.info("DISK usage: {} MB", new java.io.File(".").getTotalSpace() / 1024 / 1024);
+        logger.info("CPU usage: {}%", Runtime.getRuntime().availableProcessors() * 100);
     }
 
     private void loadCommandRegistry() {
@@ -64,33 +75,60 @@ public class Sho {
     public Command getCommand(String name) {
         String lowerName = name.toLowerCase();
         Command cmd = commands.get(lowerName);
+        if (cmd != null) return cmd;
 
-        if (cmd != null) {
-            return cmd;
+        for (Command command : commands.values()) {
+            String[] aliases = command.getAliases();
+            if (aliases == null) continue;
+
+            for (String alias : aliases) {
+                if (!alias.equalsIgnoreCase(lowerName)) continue;
+                return command;
+            }
         }
 
-        return commands.values().stream()
-                .filter(
-                        command -> {
-                            String[] aliases = command.getAliases();
-                            return aliases != null
-                                    && Arrays.stream(aliases)
-                                            .anyMatch(alias -> alias.equalsIgnoreCase(lowerName));
-                        })
-                .findFirst()
-                .orElse(null);
+        return null;
+    }
+
+    public String getPrefix(String id) {
+        String prefix = db.get("guilds", "prefix", id);
+        if (prefix == null) prefix = config.getPrefix();
+        return prefix;
+    }
+
+    public Database getDatabase() {
+        return db;
+    }
+
+    public JDA getJDA() {
+        return jda;
+    }
+
+    public Config getConfig() {
+        return config;
+    }
+
+    public Logger getLogger() {
+        return logger;
     }
 
     public static void main(String[] args) {
         try {
-            Config config = Config.load();
-            new Sho(config);
+            new Sho();
         } catch (IllegalArgumentException e) {
             logger.error("Configuration error: {}", e.getMessage());
             System.exit(1);
         } catch (Exception e) {
             logger.error("Fatal startup error. Client initialization failed.", e);
             System.exit(1);
+        }
+    }
+
+    public static void sleep(long ms) {
+        try {
+            Thread.sleep(ms);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 }
